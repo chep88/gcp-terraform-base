@@ -1,1 +1,6 @@
-# Módulo de Red (Networking)\n\nEste módulo despliega la VPC y subredes seguras.\n\n\n
+# Módulo de Red (Networking)
+
+Este módulo despliega la VPC y subredes seguras.
+
+<!-- BEGIN_TF_DOCS -->
+<!-- END_TF_DOCS -->
