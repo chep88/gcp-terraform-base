@@ -1,0 +1,29 @@
+repos:
+  # 1. Hooks básicos de limpieza (Git standards)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace   # Borra espacios al final de las líneas
+      - id: end-of-file-fixer     # Asegura que haya una línea vacía al final
+      - id: check-yaml            # Valida que tus YAML no estén rotos
+      - id: check-added-large-files # Evita subir binarios gigantes por error
+
+  # 2. Hooks específicos de Terraform (Anton Babenko - Leyenda en Terraform)
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.81.0
+    hooks:
+      # Formato y Validación
+      - id: terraform_fmt
+      - id: terraform_validate
+
+      # Seguridad (Ejecuta tfsec localmente antes de subir)
+      - id: terraform_tfsec
+        args:
+          - --args=--force-all-dirs
+          - --args=--soft-fail # Localmente solo avisa, no bloquea (opcional)
+
+      # 3. AUTOMATIZACIÓN DE DOCS (Tu punto 1) 📄
+      # Esto inyectará automáticamente tablas de inputs/outputs en tu README
+      - id: terraform_docs
+        args:
+          - --args=--lockfile=false
