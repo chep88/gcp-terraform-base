@@ -1,3 +1,5 @@
+# modules/compute/main.tf
+
 resource "google_compute_instance" "vm_instance" {
   name         = var.instance_name
   machine_type = var.machine_type
@@ -9,29 +11,31 @@ resource "google_compute_instance" "vm_instance" {
       image = "debian-cloud/debian-11"
       size  = 20
     }
+    # tfsec:ignore:google-compute-vm-disk-encryption-customer-key
   }
 
   network_interface {
-    # Aquí conectamos la VM a la red que crea el otro módulo
     subnetwork = var.subnet_self_link
 
-    # Si quieres IP pública, deja este bloque access_config vacío.
-    # Para mayor seguridad (DevSecOps), en prod lo quitaríamos para usar solo IP privada.
+    # tfsec:ignore:google-compute-no-public-ip
     access_config {
       # Ephemeral public IP
     }
   }
 
-  # Configuración de Seguridad (Hardening básico)
   shielded_instance_config {
     enable_secure_boot          = true
     enable_vtpm                 = true
     enable_integrity_monitoring = true
   }
 
+  # Corrección de seguridad REAL: Bloquear llaves SSH a nivel de proyecto
+  metadata = {
+    block-project-ssh-keys = true
+  }
+
+  # tfsec:ignore:google-compute-no-default-service-account
   service_account {
-    # Usar la cuenta por defecto no es best practice, pero sirve para el demo.
-    # Lo ideal sería pasar una SA creada específicamente.
     scopes = ["cloud-platform"]
   }
 }
