@@ -7,31 +7,32 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform Quality Check'
+    name: 'Terraform Sec & Quality'
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Bajar el código
     - name: Checkout
       uses: actions/checkout@v3
 
-    # 2. Instalar Terraform
+    # --- NUEVO PASO DE SEGURIDAD (DevSecOps) ---
+    - name: Run tfsec security scanner
+      uses: aquasecurity/tfsec-action@v1.0.0
+      with:
+        working_directory: .
+        soft_fail: false # Si encuentra errores CRÍTICOS, el pipeline fallará (Rojo)
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: 1.5.0
 
-    # 3. Verificar formato (DevOps Culture: Código limpio)
-    # Si alguien sube código mal indentado, esto fallará.
     - name: Terraform Format
       run: terraform fmt -check -recursive
 
-    # 4. Inicializar (descarga providers)
     - name: Terraform Init
       run: terraform init -backend=false
       working-directory: ./envs/dev
 
-    # 5. Validar sintaxis lógica
     - name: Terraform Validate
       run: terraform validate
       working-directory: ./envs/dev
