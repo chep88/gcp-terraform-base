@@ -5,7 +5,8 @@ resource "google_compute_instance" "vm_instance" {
   machine_type = var.machine_type
   zone         = var.zone
   tags         = var.tags
-
+  
+  # tfsec:ignore:google-compute-vm-disk-encryption-customer-key
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-11"

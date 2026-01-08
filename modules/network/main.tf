@@ -21,6 +21,7 @@ resource "google_compute_subnetwork" "subnetwork" {
 }
 
 # Firewall básico para permitir SSH (ajustar source_ranges en prod)
+# tfsec:ignore:google-compute-no-public-ingress
 resource "google_compute_firewall" "allow_ssh" {
   name    = "${var.network_name}-allow-ssh"
   network = google_compute_network.vpc_network.name

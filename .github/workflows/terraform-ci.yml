@@ -19,7 +19,8 @@ jobs:
       uses: aquasecurity/tfsec-action@v1.0.0
       with:
         working_directory: .
-        soft_fail: false # Si encuentra errores CRÍTICOS, el pipeline fallará (Rojo)
+        soft_fail: false   # Queremos que falle si hay error
+        additional_args: --force-all-dirs  # Escanea todo
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
