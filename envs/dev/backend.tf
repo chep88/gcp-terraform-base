@@ -5,7 +5,7 @@ terraform {
   #   bucket  = ""
   #   prefix  = "terraform/state"
   # }
-  
+
   # Para este ejemplo de portafolio usamos local, pero en prod usaríamos GCS arriba ⬆
   backend "local" {}
 }
