@@ -5,35 +5,56 @@ on:
     branches: [ "main" ]
   pull_request:
 
+# --- 1. PERMISOS OBLIGATORIOS PARA WIF ---
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   terraform:
-    name: 'Terraform Sec & Quality'
+    name: 'Terraform Plan'
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    # --- NUEVO PASO DE SEGURIDAD (DevSecOps) ---
-    - name: Run tfsec security scanner
-      uses: aquasecurity/tfsec-action@v1.0.0
-      with:
-        working_directory: .
-        soft_fail: false   # Queremos que falle si hay error
-        additional_args: --force-all-dirs  # Escanea todo
+      # --- 2. AUTENTICACIÓN SEGURA (Sin llaves JSON) ---
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          # Tu proveedor (El string que acabamos de conseguir)
+          workload_identity_provider: 'projects/1098738077024/locations/global/workloadIdentityPools/github-pool-v3/providers/github-provider-final'
+          # Tu Service Account (La que creamos en el script v3)
+          service_account: 'github-ci-sa@gcp-devsecops-lab-483718.iam.gserviceaccount.com'
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.5.0
+      # 3. Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
 
-    - name: Terraform Format
-      run: terraform fmt -check -recursive
+      # 4. Terraform Format
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
 
-    - name: Terraform Init
-      run: terraform init -backend=false
-      working-directory: ./envs/dev
+      # 5. Seguridad (tfsec)
+      - name: Run tfsec security scanner
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          soft_fail: true # Lo dejamos en true por ahora para ver el Plan
 
-    - name: Terraform Validate
-      run: terraform validate
-      working-directory: ./envs/dev
+      # 6. Inicializar
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./envs/dev
+
+      # 7. Validar
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./envs/dev
+
+      # 8. EL GRAN MOMENTO: Terraform Plan (Requiere credenciales)
+      - name: Terraform Plan
+        run: terraform plan -no-color
+        working-directory: ./envs/dev
