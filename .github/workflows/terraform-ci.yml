@@ -23,9 +23,9 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          # Tu proveedor (El string que acabamos de conseguir)
+          # Tu proveedor (El string que conseguimos)
           workload_identity_provider: 'projects/1098738077024/locations/global/workloadIdentityPools/github-pool-v3/providers/github-provider-final'
-          # Tu Service Account (La que creamos en el script v3)
+          # Tu Service Account
           service_account: 'github-ci-sa@gcp-devsecops-lab-483718.iam.gserviceaccount.com'
 
       # 3. Setup Terraform
@@ -42,7 +42,7 @@ jobs:
       - name: Run tfsec security scanner
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          soft_fail: true # Lo dejamos en true por ahora para ver el Plan
+          soft_fail: true
 
       # 6. Inicializar
       - name: Terraform Init
@@ -54,7 +54,13 @@ jobs:
         run: terraform validate
         working-directory: ./envs/dev
 
-      # 8. EL GRAN MOMENTO: Terraform Plan (Requiere credenciales)
+      # 8. EL GRAN MOMENTO: Terraform Plan (Con variables inyectadas)
       - name: Terraform Plan
         run: terraform plan -no-color
         working-directory: ./envs/dev
+        env:
+          # Inyecta el secreto GCP_PROJECT_ID a la variable var.project_id
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+          # Inyecta la región (cámbiala si usas otra, ej: us-east1)
+          TF_VAR_region: "us-central1"
+          TF_VAR_zone: "us-central1-a"
